@@ -30,14 +30,14 @@ public class SESServerManager implements SESchoolManagerImpl {
 	 * 
 	 * @return
 	 */
-	public ArrayList<String> getAllList() {
-		//TODO: 안나오는 이유 ?
-		ArrayList<String> allList = new ArrayList<>() ; //배열 생성
+	public ArrayList<Human> getAllList() {
+		//TODO: ArrayList retuen 타입 Human 으로 바꾸기
+		ArrayList<Human> allList = new ArrayList<>() ; //배열 생성
 		String info = "";
 		Connection con  = SESConnectionManager.getConnection();
 		String sql = "SELECT h.name , h.type, h.age, h.jumin, p.major, s.field, t.stdno "
 				+ "FROM human h, professor p, staff s, trainee t "
-				+ "WHERE h.jumin = p.jumin OR h.jumin = s.jumin OR h.jumin = t.jumin";
+				+ "WHERE h.jumin = p.jumin(+) AND h.jumin = s.jumin(+) AND h.jumin = t.jumin(+)";
 		try {
 			PreparedStatement pstmt = con.prepareStatement(sql);
 			ResultSet rs = pstmt.executeQuery();
@@ -50,22 +50,26 @@ public class SESServerManager implements SESchoolManagerImpl {
 				String field = rs.getString(6);
 				String hakbun = rs.getString(7);
 				String gonton = "";
+				Human h = null;
 				switch (type) {
 				case "professor":
 					gonton = major;
+					h = new Professor(name, jumin, age, gonton);
 					break;
 				case "trainee":
 					gonton = hakbun;
+					h = new Trainee(name, jumin, age, gonton);
 					break;
 				case "staff":
 					gonton = field;
+					h = new Staff(name, jumin, age, gonton);
 					break;
 
 				default:
 					break;
 				}
-				info = "이름 :"+ name + ", 나이: "+ age + ", 주민: "+jumin+", "+type+" : "+gonton;
-				allList.add(info);
+				
+				allList.add(h);
 				
 			}
 		} catch (SQLException e) {
@@ -238,7 +242,13 @@ public class SESServerManager implements SESchoolManagerImpl {
 	public Human searchHuman(String jumin) {
 		Human h = null;
 		Connection con = SESConnectionManager.getConnection();
-		String sql = "SELECT * FROM human WHERE jumin = ?";
+		//String sql = "SELECT * FROM human WHERE jumin = ?";
+		String sql = "SELECT human.name, human.age, human.type, trainee.stdno, professor.major, staff.field"
+				+ " FROM human, trainee, professor, staff "
+				+ " WHERE human.jumin = trainee.jumin(+) AND"
+				+ " human.jumin = professor.jumin(+) AND"
+				+ " human.jumin = staff.jumin(+) AND "
+				+ "human.jumin = ?";
 		//TODO: table join 해서 읽어오기 나눠서 객체 만들기 
 		try {
 			PreparedStatement pstmt = con.prepareStatement(sql);
@@ -247,7 +257,19 @@ public class SESServerManager implements SESchoolManagerImpl {
 			if(rs.next()){//해당 주민이 존재하면
 				String name = rs.getString("name");
 				int age = rs.getInt("age");
-				h = new Human(name, jumin, age);
+				String type = rs.getString("type");
+				if(type.equals("professor")){
+					String major = rs.getString("major");
+					h= new Professor(name, jumin, age, major);
+				}else if(type.equals("trainee")){
+					String hakbun = rs.getString("stdno");
+					h = new Trainee(name, jumin, age, hakbun);
+					
+				}else if(type.equals("staff")){
+					String field = rs.getString("field");
+					h = new Staff(name, jumin, age, field);
+				}
+				System.out.println(h);
 				System.out.println(name+"님의 기록이 존재합니다. ");
 			}//주민이 존재하지 않으면 
 		} catch (SQLException e) {
@@ -266,7 +288,7 @@ public class SESServerManager implements SESchoolManagerImpl {
 	 */
 	@Override
 	public boolean updateHuman(Human h) throws RecordNotFoundException{
-		
+		//이름 나이 각자 가진 항목만 변경가능
 		if(searchHuman(h.getJumin())== null){
 			throw new RecordNotFoundException();
 		}
@@ -285,13 +307,13 @@ public class SESServerManager implements SESchoolManagerImpl {
 		
 			if(h instanceof Professor){
 			slct = ((Professor)h).getMajor();
-			sql = sql + " professor set major = ";
+			sql = sql + " professor set major = '";
 			}else if(h instanceof Staff){
 			slct = ((Staff)h).getField();
 			sql = sql +" staff set field = '";
 			}else if(h instanceof Trainee){
 			slct = ((Trainee)h).getHakbun();
-			sql = sql+" trainee set hakbun = ";
+			sql = sql+" trainee set hakbun = '";
 			}
 			sql = sql + slct +"' WHERE jumin = '"+ h.getJumin()+"'";
 			System.out.println(sql);
@@ -339,27 +361,27 @@ public class SESServerManager implements SESchoolManagerImpl {
 	}
 
 	
-	public static void main(String[] args) throws ClassNotFoundException, RecordNotFoundException, IOException {
-		 SESServerManager sm = new SESServerManager();
-//		 Human h = new Staff("도고포", "95731-383541", 13, "9624");
-//		 try {
-//			sm.insertHuman(h);
-//		} catch (DuplicateJuminException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
+//	public static void main(String[] args) throws ClassNotFoundException, RecordNotFoundException, IOException {
+//		 SESServerManager sm = new SESServerManager();
+////		 Human h = new Staff("도고포", "95731-383541", 13, "9624");
+////		 try {
+////			sm.insertHuman(h);
+////		} catch (DuplicateJuminException e) {
+////			e.printStackTrace();
+////		} catch (IOException e) {
+////			e.printStackTrace();
+////		}
+////		 sm.deleteHuman("99911-895423");
+////	ArrayList<Human> hList = sm.getH_List();
+////	for(Human h : hList){
+////	System.out.println(h.toString());
+////	}
+////		 sm.updateHuman(h);
+//		ArrayList<String> allList = sm.getAllList();
+//		for(String st : allList){
+//			System.out.println(st);
 //		}
-//		 sm.deleteHuman("99911-895423");
-//	ArrayList<Human> hList = sm.getH_List();
-//	for(Human h : hList){
-//	System.out.println(h.toString());
 //	}
-//		 sm.updateHuman(h);
-		ArrayList<String> allList = sm.getAllList();
-		for(String st : allList){
-			System.out.println(st);
-		}
-	}
 }
  
 

@@ -28,11 +28,12 @@ public class SESClientManager implements SESchoolManagerImpl {
 	public boolean insertHuman(Human h) throws IOException, ClassNotFoundException {
 		System.out.println("insertHuman 실행");
 		Object[] obj = {"insert",h};
-		System.out.println("서버로 보냅니다.");
+		System.out.println("등록을 위해 서버로 보냅니다.");
 		oos.writeObject(obj);
 	
 		boolean bool = (boolean)ois.readObject();
-		System.out.println("받아와서 읽어요.");
+		System.out.println("boolean 받아와서 읽어요 등록? or not?.");
+		System.out.println(bool);
 		return bool;
 	}
 
@@ -55,8 +56,17 @@ public class SESClientManager implements SESchoolManagerImpl {
 	}
 
 	@Override
-	public boolean updateHuman(Human uh) {
-		return false;
+	public boolean updateHuman(Human h) throws IOException {
+		Object[] obj = {"change",h};
+		oos.writeObject(obj);
+		boolean bool = false;
+		try {
+			bool = (boolean)ois.readObject();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return bool;
 	}
 
 	@Override
@@ -68,7 +78,7 @@ public class SESClientManager implements SESchoolManagerImpl {
 		return bool;
 	}
 
-	public ArrayList<String> printAll() throws IOException, ClassNotFoundException {
+	public ArrayList<Human> printAll() throws IOException, ClassNotFoundException {
 		System.out.println("---------전체 출력-----------");
 		Human hoi = new Human("sdf", "sdf", 123);
 		Object[] obj = {"printAll", hoi};
@@ -76,7 +86,7 @@ public class SESClientManager implements SESchoolManagerImpl {
 		
 		oos.writeObject(obj);
 		System.out.println("요청 보냄");
-		ArrayList<String> un=(ArrayList<String>)ois.readObject();
+		ArrayList<Human> un=(ArrayList<Human>)ois.readObject();
 		System.out.println("리스트 읽어옴");
 		//for 문으로 전체 출력
 //		for(Human humo :un){

@@ -30,13 +30,14 @@ public class SESServer {
 			
 			ServerSocket serverSocket = new ServerSocket(7854);
 			System.out.println("is wating...");
+			
 			while(true){
 			Socket socket = serverSocket.accept();
 			System.out.println("사용자 접속");
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			oosList.add(oos);
-			SESServerThread st = new SESServerThread(socket ,ois, oos, oosList);
+			SESServerThread st = new SESServerThread(ois, oos, oosList);
 			Thread th = new Thread(st);
 			th.start();
 			}

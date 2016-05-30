@@ -24,7 +24,7 @@ public interface SESchoolManagerImpl {
 	
 	
 	//수정
-	public boolean updateHuman(Human uh) throws RecordNotFoundException;
+	public boolean updateHuman(Human uh) throws RecordNotFoundException, IOException;
 	
 	//삭제
 	public boolean deleteHuman(String jumin) throws IOException, ClassNotFoundException, RecordNotFoundException;

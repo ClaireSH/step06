@@ -16,12 +16,14 @@ public class SESServerThread implements Runnable{
 	private ObjectInputStream ois;
 	private ObjectOutputStream oos;
 	private boolean exit;
-	private Socket socket;
+	
 	private ArrayList<ObjectOutputStream> oosList;
-	public SESServerThread(Socket socket, ObjectInputStream ois, ObjectOutputStream oos, ArrayList<ObjectOutputStream> oosList) {
+	private boolean flag = false;
+	
+	public SESServerThread( ObjectInputStream ois, ObjectOutputStream oos, ArrayList<ObjectOutputStream> oosList) {
 		super();
 		System.out.println("thread 생성!");
-		this.socket = socket;
+	
 		this.ois = ois;
 		this.oos = oos;
 		this.oosList = oosList; 
@@ -34,7 +36,7 @@ public class SESServerThread implements Runnable{
 		System.out.println("run!");
 		
 		try{
-		while(socket.isConnected()){
+		while(!flag){
 		Object[] obj = (Object[])ois.readObject();
 		String remesage = (String) obj[0];
 		Object object = obj[1];
@@ -69,13 +71,16 @@ public class SESServerThread implements Runnable{
 		
 		}catch(IOException | ClassNotFoundException | RecordNotFoundException e){
 			e.printStackTrace();
+			flag = true;
 			try {
-				socket.close();
+				oos.close();
+				ois.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 		} catch (DuplicateJuminException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			
 		}
 		
 	}//run
