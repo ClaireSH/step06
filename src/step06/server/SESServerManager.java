@@ -168,7 +168,8 @@ public class SESServerManager implements SESchoolManagerImpl {
 	public boolean insertHuman(Human h) throws DuplicateJuminException, IOException{
 		boolean bool= false;
 		if(searchHuman(h.getJumin())!=null){ 
-			throw new DuplicateJuminException();}
+			return bool;
+			}
 		Connection con = SESConnectionManager.getConnection();
 		String sql = "INSERT INTO human VALUES( ?, ?, ?, ?)";
 		int type = 0;

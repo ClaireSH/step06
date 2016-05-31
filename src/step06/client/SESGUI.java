@@ -351,9 +351,19 @@ public class SESGUI extends JFrame implements ActionListener {
 					h = new Staff(name, jumin, age, select);
 				}
 				System.out.println(h.toString());
+				
+				// 할 일 :동일한 주민 번호 입력시 FALSE 리턴해서 안 멈추게 하기
+				 
 				try {
-					mg.insertHuman(h);
-					updateList();
+					boolean re = mg.insertHuman(h);
+					if(re){
+						updateList();
+					}else{
+						JOptionPane.showMessageDialog(null, "동일한 주민 번호가 이미 등록되어 있습니다.");
+						btnSwitch(false);
+					}
+					
+					
 				} catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
 				} catch (IOException e1) {
@@ -486,23 +496,13 @@ public class SESGUI extends JFrame implements ActionListener {
 				dflm.addElement(h);
 				}
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-				
-			
 			}
-	
-	
-	
-	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
 	}
 
 }
